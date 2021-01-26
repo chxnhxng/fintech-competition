@@ -1,0 +1,72 @@
+---
+title: "fintech rmd"
+author: "5TR355"
+date: "1/26/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r libraries, message = FALSE}
+library(readxl)
+library(tidyverse)
+```
+
+
+```{r reading csv files, message =FALSE}
+data_17 <- read_xlsx("2017Data.xlsx")
+data_18 <- read_xlsx("2018Data.xlsx")
+```
+
+
+```{r cleaning of data with 2 excel sheets}
+all_data <- full_join(data_17,data_18) 
+names(all_data) <-c("Types (in millions)", "FY2017", "FY2018")
+```
+
+
+```{r Tidy the data to the 8 indexes}
+index_names <- c("DSRI", "GMI", "AQI", "SGI", "DEPI","SGAI", "LVGI", "TATA")
+
+final<-index_names
+col_names <- colnames(all_data)
+for(i in 2:length(all_data)){
+  i_col <- as.vector(unlist(all_data[i]))
+  DSRI <- i_col[6]/i_col[1]*365
+  GMI <- (i_col[1]-i_col[2])/i_col[1]
+  AQI <-(1-(i_col[7]+i_col[8]+i_col[9]))/i_col[10]
+  SGI <- i_col[1]
+  DEPI <-i_col[4]/(i_col[8]+i_col[4])
+  SGAI <- i_col[3] - i_col[1]
+  LVGI <- (i_col[11]+i_col[12])/i_col[10]
+  TATA <- (i_col[5]-i_col[13])/i_col[10]
+  temp<-c(DSRI, GMI,AQI,SGI,DEPI,SGAI,LVGI,TATA)
+  final<-cbind(final,as.double(temp))
+}
+colnames(final) <- c("Ratio Indexes", col_names[2:length(col_names)])
+final <- as.data.frame(final)
+final
+```
+
+```{r calculate index values using any 2 years}
+yr <- as.double(final$FY2018)
+prev_yr <- as.double(final$FY2017)
+DSRI <- yr[1] / prev_yr[1]
+GMI <- prev_yr[2]/yr[2]
+AQI <- yr[3] / prev_yr[3]
+SGI <- yr[4] / prev_yr[4]
+DEPI <- prev_yr[5] / yr[5]
+SGAI <- yr[6] / prev_yr[6]
+LVGI <- yr[7] / prev_yr[7]
+TATA <- yr[8]
+
+m_score <- 0-4.84 + 0.92 * DSRI + 0.528 * GMI + 0.404 * AQI + 0.892 * SGI + 0.115 * DEPI - 0.172 * SGAI + 4.679 * TATA - 0.327 * LVGI
+m_score 
+if(m_score<-1.78){
+  print("Company is unlikely to be a manipulator")
+} else {
+  print("Company is likely to be a manipulator")
+}
+```
+
+
