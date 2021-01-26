@@ -1,4 +1,4 @@
-# fintech-competition
+# Fintech Competition 2021
 ## By Team 5TR355
 ### Data Files
 2017 Data and 2018 Data and dummy data that stores a summarised financial statement, and these data will be read into the R code and churn out a M-score. 
